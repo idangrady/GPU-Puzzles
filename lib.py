@@ -113,7 +113,7 @@ class Shared:
         if isinstance(size, int):
             size = (size,)
         s = np.zeros(size)
-        cache = Table("S" + str(len(self.cuda.caches)), s)
+        cache = Table(f"S{len(self.cuda.caches)}", s)
         # self.caches.append(cache)
         self.cuda.caches.append(RefList())
         self.cuda.caches[-1].refs = [cache]
@@ -154,10 +154,7 @@ class Cuda:
             old_cache.incoming = self.saved[i]
 
     def rounds(self):
-        if len(self.caches) > 0:
-            return len(self.caches[0].refs)
-        else:
-            return 0
+        return len(self.caches[0].refs) if len(self.caches) > 0 else 0
 
 
 #li Some drawing constants.
@@ -225,7 +222,7 @@ def draw_connect(tab, dia, loc2, color, con):
     )
 
 def grid(mat, sep):
-    return vcat([ hcat([y for y in x] , sep) for x in mat], sep )
+    return vcat([hcat(list(x), sep) for x in mat], sep)
 
 def draw_base(_, a, c, out):
     inputs = vcat([draw_table(d) for d in a], 2.0).center_xy()
@@ -267,7 +264,7 @@ def draw_results(results, name, tpbx, tpby, sparse=False):
                 + (1 / (2 * tpby)),
             )
             color = colors[tt]
-            
+
             lines = True
             if sparse:
                 lines = (pos.x == 0 and pos.y == 0) or (
@@ -290,7 +287,7 @@ def draw_results(results, name, tpbx, tpby, sparse=False):
             Color("grey")
         ).fill_opacity(0.0)
 
-        
+
         blocks.append(dia.pad(1.1))
         locations.append(P2(block.x, block.y))
 
@@ -346,10 +343,8 @@ class CudaProblem:
         for _, block in self.blockspergrid.enumerate():
             results[block] = {}
             for tt, pos in self.threadsperblock.enumerate():
-                a = []
                 args = ["a", "b", "c", "d"]
-                for i, inp in enumerate(self.inputs):
-                    a.append(Table(args[i], inp))
+                a = [Table(args[i], inp) for i, inp in enumerate(self.inputs)]
                 out = Table("out", self.out)
 
                 c = Cuda(block, self.threadsperblock, pos)
@@ -360,10 +355,8 @@ class CudaProblem:
 
     def score(self, results):
 
-        total = 0
         full = Counter()
         for pos, (tt, a, c, out) in results[Coord(0, 0)].items():
-            total += 1
             count = Counter()
             for out, tab in [(False, c2.refs[i]) for i in range(1, c.rounds()) for c2 in c.caches] + [(True, out)]:
                 for inc in tab.incoming:

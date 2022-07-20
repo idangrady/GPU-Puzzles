@@ -169,7 +169,7 @@ def map_2D_test(cuda):
 
 SIZE = 2
 out = np.zeros((SIZE, SIZE))
-a = np.arange(SIZE * SIZE).reshape((SIZE, SIZE))
+a = np.arange(SIZE**2).reshape((SIZE, SIZE))
 problem = CudaProblem(
     "Map 2D", map_2D_test, [a], out, [SIZE], threadsperblock=Coord(3, 3), spec=map_spec
 )
@@ -431,7 +431,7 @@ def conv_spec(a, b):
     out = np.zeros(*a.shape)
     len = b.shape[0]
     for i in range(a.shape[0]):
-        out[i] = sum([a[i + j] * b[j] for j in range(len) if i + j < a.shape[0]])
+        out[i] = sum(a[i + j] * b[j] for j in range(len) if i + j < a.shape[0])
     return out
 
 
@@ -648,8 +648,8 @@ def mm_oneblock_test(cuda):
 
 SIZE = 2
 out = np.zeros((SIZE, SIZE))
-inp1 = np.arange(SIZE * SIZE).reshape((SIZE, SIZE))
-inp2 = np.arange(SIZE * SIZE).reshape((SIZE, SIZE)).T
+inp1 = np.arange(SIZE**2).reshape((SIZE, SIZE))
+inp2 = np.arange(SIZE**2).reshape((SIZE, SIZE)).T
 
 problem = CudaProblem(
     "Matmul (Simple)",
@@ -672,8 +672,8 @@ problem.check()
 # +
 SIZE = 8
 out = np.zeros((SIZE, SIZE))
-inp1 = np.arange(SIZE * SIZE).reshape((SIZE, SIZE))
-inp2 = np.arange(SIZE * SIZE).reshape((SIZE, SIZE)).T
+inp1 = np.arange(SIZE**2).reshape((SIZE, SIZE))
+inp2 = np.arange(SIZE**2).reshape((SIZE, SIZE)).T
 
 problem = CudaProblem(
     "Matmul (Full)",
